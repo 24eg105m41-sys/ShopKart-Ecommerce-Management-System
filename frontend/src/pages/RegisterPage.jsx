@@ -25,6 +25,10 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -67,6 +71,7 @@ export default function RegisterPage() {
               <input
                 name="password"
                 type={showPassword ? 'text' : 'password'}
+                minLength={6}
                 value={form.password}
                 onChange={handleChange}
                 required

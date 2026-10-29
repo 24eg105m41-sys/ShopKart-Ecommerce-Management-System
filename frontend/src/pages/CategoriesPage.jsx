@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import Layout from '../components/Layout'
+import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 
 const emptyCategory = { name: '', description: '', status: 'ACTIVE' }
 
 export default function CategoriesPage() {
+  const { user } = useAuth()
+  const canManageCategories = ['ADMIN', 'MERCHANT'].includes(user?.role)
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState(emptyCategory)
@@ -64,11 +67,11 @@ export default function CategoriesPage() {
     <Layout title="Categories">
       <div className="toolbar">
         <span className="toolbar-copy">Manage product categories</span>
-        <button className="action-btn" onClick={() => { closeForm(); setFormOpen(true) }}><Plus size={16} /> Add category</button>
+        {canManageCategories && <button className="action-btn" onClick={() => { closeForm(); setFormOpen(true) }}><Plus size={16} /> Add category</button>}
       </div>
       {error && <div className="error-box page-error">{error}</div>}
 
-      {formOpen && (
+      {formOpen && canManageCategories && (
         <form className="management-form" onSubmit={handleSubmit}>
           <div className="management-form-heading"><h2>{editingId ? 'Edit category' : 'New category'}</h2><button type="button" className="icon-btn" aria-label="Close form" onClick={closeForm}><X size={18} /></button></div>
           <div className="management-form-grid">
@@ -82,16 +85,16 @@ export default function CategoriesPage() {
 
       {loading ? <div className="loading-box">Loading categories...</div> : (
         <div className="table-panel"><table>
-          <thead><tr><th>Name</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Description</th><th>Status</th>{canManageCategories && <th>Actions</th>}</tr></thead>
           <tbody>
             {categories.map((category) => (
               <tr key={category.id}>
                 <td>{category.name}</td><td>{category.description || '—'}</td>
                 <td><span className={`badge ${category.status === 'ACTIVE' ? 'success' : 'neutral'}`}>{category.status || 'ACTIVE'}</span></td>
-                <td><div className="row-actions"><button className="icon-btn" aria-label={`Edit ${category.name}`} onClick={() => startEdit(category)}><Pencil size={16} /></button><button className="icon-btn danger-icon" aria-label={`Delete ${category.name}`} onClick={() => deleteCategory(category)}><Trash2 size={16} /></button></div></td>
+                {canManageCategories && <td><div className="row-actions"><button className="icon-btn" aria-label={`Edit ${category.name}`} onClick={() => startEdit(category)}><Pencil size={16} /></button><button className="icon-btn danger-icon" aria-label={`Delete ${category.name}`} onClick={() => deleteCategory(category)}><Trash2 size={16} /></button></div></td>}
               </tr>
             ))}
-            {!categories.length && <tr><td colSpan="4" className="empty-cell">No categories found.</td></tr>}
+            {!categories.length && <tr><td colSpan={canManageCategories ? 4 : 3} className="empty-cell">No categories found.</td></tr>}
           </tbody>
         </table></div>
       )}

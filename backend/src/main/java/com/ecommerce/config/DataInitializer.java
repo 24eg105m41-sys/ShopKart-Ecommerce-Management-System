@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -39,9 +40,24 @@ public class DataInitializer implements CommandLineRunner {
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.data.seed-demo-data:false}")
+    private boolean seedDemoData;
+
+    @Value("${APP_SEED_ADMIN_PASSWORD:}")
+    private String seedAdminPassword;
+
+    @Value("${APP_SEED_HR_PASSWORD:}")
+    private String seedHrPassword;
+
+    @Value("${APP_SEED_CUSTOMER_PASSWORD:}")
+    private String seedCustomerPassword;
+
     @Override
     public void run(String... args) {
         seedRoles();
+        if (!seedDemoData) {
+            return;
+        }
         seedCategories();
         seedUsers();
         seedProducts();
@@ -68,17 +84,21 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedUsers() {
         if (userRepository.count() == 0) {
+            if (seedAdminPassword.isBlank() || seedHrPassword.isBlank() || seedCustomerPassword.isBlank()) {
+                throw new IllegalStateException("Set APP_SEED_ADMIN_PASSWORD, APP_SEED_HR_PASSWORD, and APP_SEED_CUSTOMER_PASSWORD to seed demo users.");
+            }
+
             Role adminRole = roleRepository.findByName("ADMIN").orElseThrow();
             Role hrRole = roleRepository.findByName("HR").orElseThrow();
             Role customerRole = roleRepository.findByName("CUSTOMER").orElseThrow();
 
             userRepository.saveAll(List.of(
-                User.builder().name("Admin User").email("admin@shopkart.com").password(passwordEncoder.encode("Admin@123")).phone("9876543210").role(adminRole).enabled(true).build(),
-                User.builder().name("HR Manager").email("hr@shopkart.com").password(passwordEncoder.encode("Hr@123")).phone("9876543211").role(hrRole).enabled(true).build(),
-                User.builder().name("Rahul Sharma").email("rahul@example.com").password(passwordEncoder.encode("Customer@123")).phone("9123456780").role(customerRole).enabled(true).build(),
-                User.builder().name("Priya Verma").email("priya@example.com").password(passwordEncoder.encode("Customer@123")).phone("9123456781").role(customerRole).enabled(true).build(),
-                User.builder().name("Amit Singh").email("amit@example.com").password(passwordEncoder.encode("Customer@123")).phone("9123456782").role(customerRole).enabled(true).build(),
-                User.builder().name("Neha Gupta").email("neha@example.com").password(passwordEncoder.encode("Customer@123")).phone("9123456783").role(customerRole).enabled(true).build()
+                User.builder().name("Admin User").email("admin@shopkart.com").password(passwordEncoder.encode(seedAdminPassword)).phone("9876543210").role(adminRole).enabled(true).build(),
+                User.builder().name("HR Manager").email("hr@shopkart.com").password(passwordEncoder.encode(seedHrPassword)).phone("9876543211").role(hrRole).enabled(true).build(),
+                User.builder().name("Rahul Sharma").email("rahul@example.com").password(passwordEncoder.encode(seedCustomerPassword)).phone("9123456780").role(customerRole).enabled(true).build(),
+                User.builder().name("Priya Verma").email("priya@example.com").password(passwordEncoder.encode(seedCustomerPassword)).phone("9123456781").role(customerRole).enabled(true).build(),
+                User.builder().name("Amit Singh").email("amit@example.com").password(passwordEncoder.encode(seedCustomerPassword)).phone("9123456782").role(customerRole).enabled(true).build(),
+                User.builder().name("Neha Gupta").email("neha@example.com").password(passwordEncoder.encode(seedCustomerPassword)).phone("9123456783").role(customerRole).enabled(true).build()
             ));
         }
     }

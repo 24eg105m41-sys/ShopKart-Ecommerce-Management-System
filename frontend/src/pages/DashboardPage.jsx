@@ -8,6 +8,7 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState(null)
   const [sales, setSales] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -18,6 +19,8 @@ export default function DashboardPage() {
         ])
         setSummary(summaryRes.data.data)
         setSales(salesRes.data.data || [])
+      } catch (err) {
+        setError(err.response?.data?.message || 'Could not load dashboard.')
       } finally {
         setLoading(false)
       }
@@ -41,6 +44,7 @@ export default function DashboardPage() {
         <div className="loading-box">Loading dashboard...</div>
       ) : (
         <>
+          {error && <div className="error-box page-error">{error}</div>}
           <section className="stats-grid">
             {cards.map(({ label, value, icon: Icon, delta }) => (
               <div key={label} className="stat-card">

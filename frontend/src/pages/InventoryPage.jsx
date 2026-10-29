@@ -5,12 +5,15 @@ import api from '../services/api'
 export default function InventoryPage() {
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const load = async () => {
       try {
         const { data } = await api.get('/api/inventory')
         setInventory(data.data || [])
+      } catch (err) {
+        setError(err.response?.data?.message || 'Could not load inventory.')
       } finally {
         setLoading(false)
       }
@@ -24,6 +27,8 @@ export default function InventoryPage() {
       {loading ? (
         <div className="loading-box">Loading inventory...</div>
       ) : (
+        <>
+        {error && <div className="error-box page-error">{error}</div>}
         <div className="table-panel">
           <table>
             <thead>
@@ -48,6 +53,7 @@ export default function InventoryPage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </Layout>
   )

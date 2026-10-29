@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import Layout from '../components/Layout'
+import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 
 const emptyProduct = {
@@ -9,6 +10,8 @@ const emptyProduct = {
 }
 
 export default function ProductsPage() {
+  const { user } = useAuth()
+  const canManageProducts = ['ADMIN', 'MERCHANT'].includes(user?.role)
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -100,14 +103,16 @@ export default function ProductsPage() {
     <Layout title="Products">
       <div className="toolbar">
         <input value={search} onChange={(e) => { setPage(0); setSearch(e.target.value) }} placeholder="Search products..." />
-        <button className="action-btn" onClick={() => { closeForm(); setFormOpen(true) }}>
-          <Plus size={16} /> Add product
-        </button>
+        {canManageProducts && (
+          <button className="action-btn" onClick={() => { closeForm(); setFormOpen(true) }}>
+            <Plus size={16} /> Add product
+          </button>
+        )}
       </div>
 
       {error && <div className="error-box page-error">{error}</div>}
 
-      {formOpen && (
+      {formOpen && canManageProducts && (
         <form className="management-form" onSubmit={handleSubmit}>
           <div className="management-form-heading">
             <h2>{editingId ? 'Edit product' : 'New product'}</h2>
@@ -133,7 +138,7 @@ export default function ProductsPage() {
       ) : (
         <div className="table-panel">
           <table>
-            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th>{canManageProducts && <th>Actions</th>}</tr></thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product.id}>
@@ -142,10 +147,10 @@ export default function ProductsPage() {
                   <td>₹{Number(product.price || 0).toLocaleString('en-IN')}</td>
                   <td>{product.stock ?? 0}</td>
                   <td><span className={`badge ${product.status === 'ACTIVE' ? 'success' : 'neutral'}`}>{product.status || 'ACTIVE'}</span></td>
-                  <td><div className="row-actions"><button className="icon-btn" aria-label={`Edit ${product.name}`} onClick={() => startEdit(product)}><Pencil size={16} /></button><button className="icon-btn danger-icon" aria-label={`Delete ${product.name}`} onClick={() => deleteProduct(product)}><Trash2 size={16} /></button></div></td>
+                  {canManageProducts && <td><div className="row-actions"><button className="icon-btn" aria-label={`Edit ${product.name}`} onClick={() => startEdit(product)}><Pencil size={16} /></button><button className="icon-btn danger-icon" aria-label={`Delete ${product.name}`} onClick={() => deleteProduct(product)}><Trash2 size={16} /></button></div></td>}
                 </tr>
               ))}
-              {!products.length && <tr><td colSpan="6" className="empty-cell">No products found.</td></tr>}
+              {!products.length && <tr><td colSpan={canManageProducts ? 6 : 5} className="empty-cell">No products found.</td></tr>}
             </tbody>
           </table>
         </div>

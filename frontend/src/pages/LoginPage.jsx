@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [form, setForm] = useState({ email: 'admin@shopkart.com', password: 'Admin@123' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -72,11 +72,6 @@ export default function LoginPage() {
             New here?{' '}
             <Link to="/register" className="auth-link">Create an account</Link>
           </p>
-          <div className="demo-credentials">
-            <strong>Demo credentials</strong>
-            <span>Admin: admin@shopkart.com / Admin@123</span>
-            <span>HR: hr@shopkart.com / Hr@123</span>
-          </div>
         </div>
       </div>
     </div>
