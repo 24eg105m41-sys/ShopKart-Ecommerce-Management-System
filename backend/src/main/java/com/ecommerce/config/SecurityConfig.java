@@ -35,6 +35,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private static final String SHOPKART_VERCEL_ORIGIN =
+        "https://shopkart-frontend-6lpfdehl7-ecommerce-f8fb.vercel.app";
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
 
@@ -92,6 +95,9 @@ public class SecurityConfig {
         List<String> origins = new ArrayList<>(
             Arrays.stream(allowedOrigins.split(",")).map(String::trim).filter(origin -> !origin.isEmpty()).toList()
         );
+        if (!origins.contains(SHOPKART_VERCEL_ORIGIN)) {
+            origins.add(SHOPKART_VERCEL_ORIGIN);
+        }
         if (allowLocalhost) {
             origins.addAll(List.of(
                 "http://localhost:5173",
