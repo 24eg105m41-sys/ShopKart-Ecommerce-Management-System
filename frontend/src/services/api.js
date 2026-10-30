@@ -1,9 +1,10 @@
 import axios from 'axios'
 
-const configuredApiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8080' : '')
-if (!configuredApiUrl) {
-  throw new Error('VITE_API_URL must be set for production builds.')
-}
+const configuredApiUrl =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? 'http://localhost:8080'
+    : 'https://shopkart-ecommerce-management-system-1.onrender.com/api')
 
 const baseURL = configuredApiUrl.replace(/\/+$/, '').replace(/\/api$/i, '')
 
@@ -13,9 +14,16 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('shopkart_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  const isAuthEndpoint =
+    config.url &&
+    (config.url.endsWith('/api/auth/login') ||
+      config.url.endsWith('/api/auth/register'))
+
+  if (!isAuthEndpoint) {
+    const token = localStorage.getItem('shopkart_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
   return config
 })

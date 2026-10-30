@@ -42,12 +42,12 @@ public class AuthService {
         }
 
         Role role = roleRepository.findByName("MERCHANT")
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant role not found"));
+            .orElseGet(() -> roleRepository.save(Role.builder().name("MERCHANT").build()));
 
         User user = User.builder()
-            .name(request.getName())
+            .name(request.getName().trim())
             .email(request.getEmail().trim().toLowerCase())
-            .phone(request.getPhone())
+            .phone(request.getPhone() != null ? request.getPhone().trim() : null)
             .password(passwordEncoder.encode(request.getPassword()))
             .role(role)
             .enabled(true)
